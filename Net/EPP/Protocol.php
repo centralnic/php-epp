@@ -38,37 +38,37 @@ class Net_EPP_Protocol {
 	* @return PEAR_Error|string either an error or a string
 	*/
 	static function getFrame($socket) {
-		if (@feof($socket)) return new PEAR_Error('connection closed (socket is EOF)');
-
-		$hdr = @fread($socket, 4);
-
-		if (empty($hdr) && feof($socket)) {
-			return new PEAR_Error('connection closed (no header received and socket is EOF)');
-
-		} elseif (false === $hdr) {
-			return new PEAR_Error('Error reading from peer: '.$php_errormsg);
-
-		} else {
-			$unpacked = unpack('N', $hdr);
-			$length = $unpacked[1];
-			if ($length < 5) {
-				return new PEAR_Error(sprintf('Got a bad frame header length of %d bytes from peer', $length));
+		$hdr = '';
+		while (strlen($hdr) < 4)  {
+			if (@feof($socket)) return new PEAR_Error('Connection closed (socket is EOF)');
+			if (($hdrstr = @fread($socket,4 - strlen($hdr))) !== false) {
+				$hdr .= $hdrstr;
 
 			} else {
-				$length -= 4; // discard the length of the header itself
+				return new PEAR_ERROR('Error reading from socket:'.$php_errormsg);
 
-				// sometimes the socket can be buffered with a limit below the frame
-				// length, so we continually read from the socket until we get the full frame:
-				$frame = '';
-				while (strlen($frame) < $length) $frame .= fread($socket, ($length));
+			}
+		}
 
-				if (strlen($frame) > $length) {
-					return new PEAR_Error(sprintf("Frame length (%d bytes) doesn't match header (%d bytes)", strlen($frame), ($length)));
+		$unpacked = unpack('N', $hdr);
+		$length = $unpacked[1];
+		if ($length < 5) {
+			return new PEAR_Error(sprintf('Got a bad frame header length of %d bytes from peer', $length));
 
-				} else {
-					return $frame;
+		} else {
+			$length -= 4; // discard the length of the header itself
 
-				}
+			// sometimes the socket can be buffered with a limit below the frame
+			// length, so we continually read from the socket until we get the full frame:
+			$frame = '';
+			while (strlen($frame) < $length) $frame .= fread($socket, $length);
+
+			if (strlen($frame) > $length) {
+				return new PEAR_Error(sprintf("Frame length (%d bytes) doesn't match header (%d bytes)", strlen($frame), ($length)));
+
+			} else {
+				return $frame;
+
 			}
 		}
 	}
