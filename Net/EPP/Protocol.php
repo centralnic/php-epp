@@ -32,24 +32,49 @@ require_once('PEAR.php');
 */
 class Net_EPP_Protocol {
 
+	static function _fread_nb($socket,$length) {
+		$result = '';
+
+		// Loop reading and checking info to see if we hit timeout
+		$info = stream_get_meta_data($socket);
+		while (!$info['timed_out'] && !feof($socket)) {
+			// Try read remaining data from socket
+			$buffer = @fread($socket,$length - strlen($result));
+			// If the buffer actually contains something then add it to the result
+			if ($buffer !== false) {
+				$result .= $buffer;
+				// If we hit the length we looking for, break
+				if (strlen($result) == $length) {
+					break;
+				}
+			} else {
+				// Sleep 0.25s
+				usleep(2500);
+			}
+			// Update metadata
+			$info = stream_get_meta_data($socket);
+		}
+
+		// Check for timeout
+		if ($info['timed_out']) {
+			return new PEAR_Error('Timeout while reading data from socket');
+		}
+
+		return $result;
+	}
+
 	/**
 	* get an EPP frame from the remote peer
 	* @param resource $socket a socket connected to the remote peer
 	* @return PEAR_Error|string either an error or a string
 	*/
 	static function getFrame($socket) {
-		$hdr = '';
-		while (strlen($hdr) < 4)  {
-			if (@feof($socket)) return new PEAR_Error('Connection closed (socket is EOF)');
-			if (($hdrstr = @fread($socket,4 - strlen($hdr))) !== false) {
-				$hdr .= $hdrstr;
-
-			} else {
-				return new PEAR_ERROR('Error reading from socket:'.$php_errormsg);
-
-			}
+		// Read header
+		if (PEAR::isError($hdr = Net_EPP_Protocol::_fread_nb($socket,4))) {
+	       		return $hdr;
 		}
 
+		// Unpack first 4 bytes which is our length
 		$unpacked = unpack('N', $hdr);
 		$length = $unpacked[1];
 		if ($length < 5) {
@@ -57,19 +82,8 @@ class Net_EPP_Protocol {
 
 		} else {
 			$length -= 4; // discard the length of the header itself
-
-			// sometimes the socket can be buffered with a limit below the frame
-			// length, so we continually read from the socket until we get the full frame:
-			$frame = '';
-			while (strlen($frame) < $length) $frame .= fread($socket, $length);
-
-			if (strlen($frame) > $length) {
-				return new PEAR_Error(sprintf("Frame length (%d bytes) doesn't match header (%d bytes)", strlen($frame), ($length)));
-
-			} else {
-				return $frame;
-
-			}
+			// Read frame
+			return Net_EPP_Protocol::_fread_nb($socket,$length);
 		}
 	}
 
@@ -79,6 +93,14 @@ class Net_EPP_Protocol {
 	* @param string $xml the XML to send
 	*/
 	static function sendFrame($socket, $xml) {
-		fwrite($socket, pack('N', (strlen($xml)+4)).$xml);
+		// Grab XML length & add on 4 bytes for the counter
+		$length = strlen($xml) + 4;
+		$res = fwrite($socket, pack('N',$length) . $xml);
+		// Check our write matches
+		if ($length != $res) {
+			return new PEAR_Error("Short write when sending XML");
+		}
+
+		return $res;
 	}
 }
