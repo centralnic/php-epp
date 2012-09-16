@@ -60,17 +60,25 @@
 
 			} else {
 				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
-
 			}
 			if (!$result) {
 				return new PEAR_Error("Error connecting to $target: $errstr (code $errno)");
 
-			} else {
-				$this->socket = $result;
-				return $this->getFrame();
-
 			}
 
+			// Set our socket
+			$this->socket = $result;
+
+			// Set stream timeout
+			if (!stream_set_timeout($this->socket,$timeout)) {
+				return new PEAR_Error("Failed to set timeout on socket: $errstr (code $errno)");
+			}
+			// Set blocking
+			if (!stream_set_blocking($this->socket,0)) {
+				return new PEAR_Error("Failed to set blocking on socket: $errstr (code $errno)");
+			}
+
+			return $this->getFrame();
 		}
 
 		/**
@@ -101,7 +109,9 @@
 		* @return PEAR_Error|string the frame returned by the server, or an error object
 		*/
 		function request($xml) {
-			$this->sendFrame($xml);
+			if (PEAR::isError($res = $this->sendFrame($xml))) {
+				return $res;
+			}
 			return $this->getFrame();
 		}
 
