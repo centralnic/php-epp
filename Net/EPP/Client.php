@@ -24,7 +24,6 @@
 	* @revision $Id: Client.php,v 1.13 2010/10/21 11:55:07 gavin Exp $
 	*/
 
-	require_once('PEAR.php');
 	require_once('Net/EPP/Protocol.php');
 
 	$GLOBALS['Net_EPP_Client_Version'] = '0.0.4';
@@ -45,13 +44,15 @@
 		* This method establishes the connection to the server. If the connection was
 		* established, then this method will call getFrame() and return the EPP <greeting>
 		* frame which is sent by the server upon connection. If connection fails, then
-		* a PEAR_Error object explaining the error will be returned instead.
+		* an exception with a message explaining the error will be thrown and handled 
+		* in the calling code.
 		* @param string $host the hostname
 		* @param integer $port the TCP port
 		* @param integer $timeout the timeout in seconds
 		* @param boolean $ssl whether to connect using SSL
 		* @param resource $context a stream resource to use when setting up the socket connection
-		* @return PEAR_Error|string a PEAR_Error on failure, or a string containing the server <greeting>
+		* @throws Exception on connection errors
+		* @return a string containing the server <greeting>
 		*/
 		function connect($host, $port=700, $timeout=1, $ssl=true, $context=NULL) {
 			$target = sprintf('%s://%s:%d', ($ssl === true ? 'tls' : 'tcp'), $host, $port);
@@ -61,8 +62,8 @@
 			} else {
 				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
 			}
-			if (!$result) {
-				return new PEAR_Error("Error connecting to $target: $errstr (code $errno)");
+			if ($result === False) {
+				throw new Exception("Error connecting to $target: $errstr (code $errno)");
 
 			}
 
@@ -71,11 +72,11 @@
 
 			// Set stream timeout
 			if (!stream_set_timeout($this->socket,$timeout)) {
-				return new PEAR_Error("Failed to set timeout on socket: $errstr (code $errno)");
+				throw new Exception("Failed to set timeout on socket: $errstr (code $errno)");
 			}
 			// Set blocking
 			if (!stream_set_blocking($this->socket,0)) {
-				return new PEAR_Error("Failed to set blocking on socket: $errstr (code $errno)");
+				throw new Exception("Failed to set blocking on socket: $errstr (code $errno)");
 			}
 
 			return $this->getFrame();
@@ -85,9 +86,9 @@
 		* Get an EPP frame from the server.
 		* This retrieves a frame from the server. Since the connection is blocking, this
 		* method will wait until one becomes available. If the connection has been broken,
-		* this method will return a PEAR_Error object, otherwise it will return a string
-		* containing the XML from the server
-		* @return PEAR_Error|string a PEAR_Error on failure, or a string containing the frame
+		* this method will return a string containing the XML from the server
+		* @throws Exception on frame errors
+		* @return a string containing the frame
 		*/
 		function getFrame() {
 			return Net_EPP_Protocol::getFrame($this->socket);
@@ -97,6 +98,7 @@
 		* Send an XML frame to the server.
 		* This method sends an EPP frame to the server.
 		* @param string the XML data to send
+		* @throws Exception when it doesn't complete the write to the socket
 		* @return boolean the result of the fwrite() operation
 		*/
 		function sendFrame($xml) {
@@ -106,12 +108,11 @@
 		/**
 		* a wrapper around sendFrame() and getFrame()
 		* @param string $xml the frame to send to the server
-		* @return PEAR_Error|string the frame returned by the server, or an error object
+		* @throws Exception when it doesn't complete the write to the socket
+		* @return string the frame returned by the server, or an error object
 		*/
 		function request($xml) {
-			if (PEAR::isError($res = $this->sendFrame($xml))) {
-				return $res;
-			}
+			$res = $this->sendFrame($xml);
 			return $this->getFrame();
 		}
 
