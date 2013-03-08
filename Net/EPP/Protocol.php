@@ -70,8 +70,9 @@ class Net_EPP_Protocol {
 	*/
 	static function getFrame($socket) {
 		// Read header
-		$hdr = Net_EPP_Protocol::_fread_nb($socket,4);
-		if ($hdr instanceof PEAR_Error) return $hdr;
+		if (PEAR::isError($hdr = Net_EPP_Protocol::_fread_nb($socket,4))) {
+	       		return $hdr;
+		}
 
 		// Unpack first 4 bytes which is our length
 		$unpacked = unpack('N', $hdr);

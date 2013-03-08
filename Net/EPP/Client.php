@@ -109,14 +109,10 @@
 		* @return PEAR_Error|string the frame returned by the server, or an error object
 		*/
 		function request($xml) {
-			$res = $this->sendFrame($xml);
-			if ($res instanceof PEAR_Error) {
+			if (PEAR::isError($res = $this->sendFrame($xml))) {
 				return $res;
-
-			} else {
-				return $this->getFrame();
-
 			}
+			return $this->getFrame();
 		}
 
 		/**
