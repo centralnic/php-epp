@@ -49,13 +49,13 @@ class Net_EPP_Protocol {
 				}
 			} else {
 				// Sleep 0.25s
-				usleep(2500);
+				usleep(250000);
 			}
 			// Update metadata
 			$info = stream_get_meta_data($socket);
 			$time_end = microtime(true);
-			if (($time_end - $time_start) > 5) {
-				throw new exception('Timeout while contacting EPP Server');
+			if (($time_end - $time_start) > 10000000) {
+				throw new exception('Timeout while reading from EPP Server');
 			}
 		}
 
@@ -65,6 +65,45 @@ class Net_EPP_Protocol {
 		}
 
 		return $result;
+	}
+
+
+	static function _fwrite_nb($socket,$buffer,$length) {
+		// Loop writing and checking info to see if we hit timeout
+		$info = stream_get_meta_data($socket);
+		$time_start = microtime(true);
+
+		$pos = 0;
+		while (!$info['timed_out'] && !feof($socket)) {
+			// Some servers don't like alot of data, so keep it small per chunk
+			$wlen = $length - $pos;
+			if ($wlen > 1024) { $wlen = 1024; }
+			// Try write remaining data from socket
+			$written = @fwrite($socket,substr($buffer,$pos),$wlen);
+			// If we read something, bump up the position
+			if ($written && $written !== false) {
+				$pos += $written;
+				// If we hit the length we looking for, break
+				if ($pos == $length) {
+					break;
+				}
+			} else {
+				// Sleep 0.25s
+				usleep(250000);
+			}
+			// Update metadata
+			$info = stream_get_meta_data($socket);
+			$time_end = microtime(true);
+			if (($time_end - $time_start) > 10000000) {
+				throw new exception('Timeout while writing to EPP Server');
+			}
+		}
+		// Check for timeout
+		if ($info['timed_out']) {
+			throw new Exception('Timeout while writing data to socket');
+		}
+
+		return $pos;
 	}
 
 	/**
@@ -100,7 +139,7 @@ class Net_EPP_Protocol {
 	static function sendFrame($socket, $xml) {
 		// Grab XML length & add on 4 bytes for the counter
 		$length = strlen($xml) + 4;
-		$res = fwrite($socket, pack('N',$length) . $xml);
+		$res = Net_EPP_Protocol::_fwrite_nb($socket, pack('N',$length) . $xml,$length);
 		// Check our write matches
 		if ($length != $res) {
 			throw new Exception("Short write when sending XML");
