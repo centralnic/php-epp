@@ -14,15 +14,17 @@
 			$this->command = $this->createElement($command);
 			$this->body->appendChild($this->command);
 
-			$this->payload = $this->createElementNS(
-				Net_EPP_ObjectSpec::xmlns($this->type),
-				$this->type.':'.$command
-			);
+			if ($this->type !== "") {
+				$this->payload = $this->createElementNS(
+					Net_EPP_ObjectSpec::xmlns($this->type),
+					$this->type.':'.$command
+				);
 
-			$this->command->appendChild($this->payload);
+				$this->command->appendChild($this->payload);
+			}
 
 			$this->clTRID = $this->createElement('clTRID');
-			$this->clTRID->appendChild($this->createTextNode());
+			$this->clTRID->appendChild($this->createTextNode('a'));
 			$this->body->appendChild($this->clTRID);
 		}
 
@@ -48,5 +50,16 @@
 			);
 		}
 
+		function createExtensionElement($ext, $command) {
+			$this->extension = $this->createElement('extension');
+			$this->body->appendChild($this->extension);
+
+			$this->extension->payload = $this->createElementNS(
+				Net_EPP_ObjectSpec::xmlns($ext),
+				$ext.':'.$command
+			);
+
+			$this->extension->appendChild($this->extension->payload);
+		}
 	}
 ?>
