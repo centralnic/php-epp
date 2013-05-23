@@ -21,6 +21,11 @@
 				'id'		=> 'id',
 				'schema'	=> 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
 			),
+			'rgp' => array(
+				'xmlns'		=> 'urn:ietf:params:xml:ns:rgp-1.0',
+				'id'		=> 'id',
+				'schema'	=> 'urn:ietf:params:xml:ns:rgp-1.0 rgp-1.0.xsd',
+			),
 		);
 
 		static function id($object) {
