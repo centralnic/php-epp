@@ -1,0 +1,7 @@
+THIS IS LEGACY CODE
+===================
+
+This branch is the "legacy-errors" branch, where Net_EPP and its 
+subclasses return PEAR_Errors instead of throwing exceptions. You should 
+use the master branch when working on new code. This branch exists only 
+to stop old code from breaking.
