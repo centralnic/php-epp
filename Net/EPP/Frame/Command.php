@@ -14,7 +14,7 @@
 			$this->command = $this->createElement($command);
 			$this->body->appendChild($this->command);
 
-			if ($this->type !== "") {
+			if (isset($this->type)) {
 				$this->payload = $this->createElementNS(
 					Net_EPP_ObjectSpec::xmlns($this->type),
 					$this->type.':'.$command
@@ -24,7 +24,7 @@
 			}
 
 			$this->clTRID = $this->createElement('clTRID');
-			$this->clTRID->appendChild($this->createTextNode('a'));
+			$this->clTRID->appendChild($this->createTextNode(''));
 			$this->body->appendChild($this->clTRID);
 		}
 
