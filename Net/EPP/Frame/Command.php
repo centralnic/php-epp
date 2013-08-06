@@ -5,7 +5,7 @@
 	*/
 	class Net_EPP_Frame_Command extends Net_EPP_Frame {
 
-		function __construct($command, $type) {
+		function __construct($command, $type="") {
 			$this->type = $type;
 			$command = strtolower($command);
 			if (!in_array($command, array('check', 'info', 'create', 'update', 'delete', 'renew', 'transfer', 'poll', 'login', 'logout'))) trigger_error("Invalid argument value '$command' for \$command", E_USER_ERROR);
@@ -14,7 +14,7 @@
 			$this->command = $this->createElement($command);
 			$this->body->appendChild($this->command);
 
-			if (isset($this->type)) {
+			if (!empty($this->type)) {
 				$this->payload = $this->createElementNS(
 					Net_EPP_ObjectSpec::xmlns($this->type),
 					$this->type.':'.$command
@@ -29,7 +29,6 @@
 		}
 
 		function addObjectProperty($name, $value=NULL) {
-			debug_log("%s::%s(%s, %s)", __CLASS__, __FUNCTION__, $name, $value);
 			$element = $this->createObjectPropertyElement($name);
 			$this->payload->appendChild($element);
 
