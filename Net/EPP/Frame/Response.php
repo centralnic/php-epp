@@ -3,7 +3,7 @@
 	/**
 	* @package Net_EPP
 	*/
-	final class Net_EPP_Frame_Response extends Net_EPP_Frame {
+	class Net_EPP_Frame_Response extends Net_EPP_Frame {
 		function __construct() {
 			parent::__construct('response');
 		}
