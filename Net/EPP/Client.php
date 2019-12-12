@@ -24,9 +24,9 @@
 	* @revision $Id: Client.php,v 1.13 2010/10/21 11:55:07 gavin Exp $
 	*/
 
-	require_once('Net/EPP/Protocol.php');
+	require_once('Protocol.php');
 
-	$GLOBALS['Net_EPP_Client_Version'] = '0.0.4';
+	$GLOBALS['Net_EPP_Client_Version'] = '0.0.5';
 
 	/**
 	* A simple client class for the Extensible Provisioning Protocol (EPP)
@@ -55,6 +55,7 @@
 		* @return a string containing the server <greeting>
 		*/
 		function connect($host, $port=700, $timeout=1, $ssl=true, $context=NULL) {
+			debug_log("start connecting");
 			$target = sprintf('%s://%s:%d', ($ssl === true ? 'tls' : 'tcp'), $host, $port);
 			if (is_resource($context)) {
 				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
@@ -78,7 +79,7 @@
 			if (!stream_set_blocking($this->socket,0)) {
 				throw new Exception("Failed to set blocking on socket: $errstr (code $errno)");
 			}
-
+			debug_log("returning the brand new socket");
 			return $this->getFrame();
 		}
 
