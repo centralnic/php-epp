@@ -79,7 +79,7 @@
 			if (!stream_set_blocking($this->socket,0)) {
 				throw new Exception("Failed to set blocking on socket: $errstr (code $errno)");
 			}
-			debug_log("returning the brand new socket");
+			
 			return $this->getFrame();
 		}
 
