@@ -117,6 +117,7 @@ class Net_EPP_Protocol {
 		if($GLOBALS['debug']) debug_log("start reading first 4 bytes");
 		// Read header
 		$hdr = Net_EPP_Protocol::_fread_nb($socket,4);
+		if($GLOBALS['debug']) debug_log("read header successfully");
 
 		// Unpack first 4 bytes which is our length
 		$unpacked = unpack('N', $hdr);
