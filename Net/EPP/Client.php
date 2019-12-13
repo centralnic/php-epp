@@ -75,6 +75,7 @@
 			if($this->debug)  debug_log("connecting to {$target}");
 
 			if (is_resource($context)) {
+				if($this->debug) debug_log("using your provided context resource");
 				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
 
 			} else {
