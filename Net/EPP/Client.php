@@ -57,30 +57,22 @@
 		function connect($host, $port=700, $timeout=1, $ssl=true, $context=NULL) {
 			debug_log("start connecting");
 			$target = sprintf('%s://%s:%d', ($ssl === true ? 'tls' : 'tcp'), $host, $port);
-			if (is_resource($context)) {
-				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
-
-			} else {
-				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
-			}
-			if ($result === False) {
+			if (!$this->socket = @stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT,$context)) {
 				throw new Exception("Error connecting to $target: $errstr (code $errno)");
-
-			}
-
-			// Set our socket
-			$this->socket = $result;
-
-			// Set stream timeout
-			if (!stream_set_timeout($this->socket,$timeout)) {
-				throw new Exception("Failed to set timeout on socket: $errstr (code $errno)");
-			}
-			// Set blocking
-			if (!stream_set_blocking($this->socket,0)) {
-				throw new Exception("Failed to set blocking on socket: $errstr (code $errno)");
+			} else {
+				debug_log("connection succeeded");
+				// Set stream timeout
+				if (!stream_set_timeout($this->socket,$timeout)) {
+					throw new Exception("Failed to set timeout on socket: $errstr (code $errno)");
+				}
+				// Set blocking
+				if (!stream_set_blocking($this->socket,0)) {
+					throw new Exception("Failed to set blocking on socket: $errstr (code $errno)");
+				}			
+				return $this->getFrame();
 			}
 			
-			return $this->getFrame();
+			
 		}
 
 		/**
