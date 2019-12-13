@@ -50,7 +50,7 @@
 		 */
 		public function __construct($debug = false) {
 			$this->debug = $debug;
-			$_GLOBAL['debug']=$debug;
+			$GLOBALS['debug']=$debug;
 			$this->socket = NULL;
 		}
 	

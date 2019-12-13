@@ -114,7 +114,7 @@ class Net_EPP_Protocol {
 	*/
 	static function getFrame($socket) {
 
-		if($_GLOBAL['debug']) debug_log("start reading first 4 bytes");
+		if($GLOBALS['debug']) debug_log("start reading first 4 bytes");
 		// Read header
 		$hdr = Net_EPP_Protocol::_fread_nb($socket,4);
 
