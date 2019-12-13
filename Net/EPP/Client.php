@@ -70,16 +70,17 @@
 		* @return a string containing the server <greeting>
 		*/
 		function connect($host, $port=700, $timeout=1, $ssl=true, $context=NULL) {
-			if($this->debug) debug_log("start connecting");
-			$target = sprintf('%s://%s:%d', ($ssl === true ? 'tls' : 'tcp'), $host, $port);
-			
+			if($this->debug) debug_log("in connect");
+			$target = sprintf('%s://%s:%d', ($ssl === true ? 'ssl' : 'tcp'), $host, $port);
+			if($this->debug)  debug_log("connecting to {$target}");
+
 			if (is_resource($context)) {
 				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
 
 			} else {
 				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
 			}
-			if ($result === False) {
+			if (!$result) {
 				throw new Exception("Error connecting to $target: $errstr (code $errno)");
 
 			}
