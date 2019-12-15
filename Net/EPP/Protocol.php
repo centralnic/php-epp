@@ -37,13 +37,13 @@ class Net_EPP_Protocol {
 		// Loop reading and checking info to see if we hit timeout
 		$info = stream_get_meta_data($socket);
 		$time_start = microtime(true);
-		$timeout_time=microtime(true)+$GLOBALS['timeout'];
+		$timeout_time=$time_start+$GLOBALS['timeout'];
 
 		while (!$info['timed_out'] && !feof($socket)) {
 			//make sure we don't wait to long
-			if($timeout_time>microtime(true)){
+			if($timeout_time<microtime(true)){
 				$time_diff=microtime(true)-$time_start;
-				throw new exception('Timeout reading from EPP server');
+				throw new exception("Timeout reading from EPP server after $time_diff seconds");
 			}
 			// Try read remaining data from socket
 			$buffer = fread($socket,$length - strlen($result));
