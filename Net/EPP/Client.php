@@ -81,19 +81,33 @@
 
 			if (is_resource($context)) {
 				if($this->debug) debug_log("using your provided context resource");
+
 				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
 
 			} else {
 				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
 			}
-			if (!$result) {
-				throw new Exception("Error connecting to $target: $errstr (code $errno)");
 
+			if (is_resource($result)) {
+				if ($errno == 0) {
+					if($this->debug){
+						$socketmeta = stream_get_meta_data($result);
+						if (isset($socketmeta['crypto'])) {
+							debug_log("socket opened with protocol ".$socketmeta['crypto']['protocol'].", cipher ".$socketmeta['crypto']['cipher_name'].", ".$socketmeta['crypto']['cipher_bits']." bits ".$socketmeta['crypto']['cipher_version'],"Connection made");
+						} else {
+							debug_log("socket opened without crypt");
+						}
+					}
+					// Set our socket
+					$this->socket = $result;
+				}
+				else{
+					throw new Exception("non errono 0 retrieved from socket connection: {$errno}");
+				}
+			} else {
+				throw new Exception("Connection could not be opened: $errno $errstr");
 			}
 
-			// Set our socket
-			$this->socket = $result;
-			if($this->debug) debug_log("connected");
 
 			// Set stream timeout
 			if (!stream_set_timeout($this->socket,$timeout)) {
@@ -101,6 +115,7 @@
 			}
 			$this->timeout=$timeout;
 			$GLOBALS['timeout']=$timeout;
+			
 			// Set blocking
 			if (!stream_set_blocking($this->socket,0)) {
 				throw new Exception("Failed to set blocking on socket: $errstr (code $errno)");
