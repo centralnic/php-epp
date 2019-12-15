@@ -105,7 +105,7 @@
 				}
 			} else {
 				if($result === FALSE && $errno == 0){
-					throw new Exception("Connection could not be opened due to socket problem");
+					throw new Exception("Connection could not be opened due to socket problem.  Reasons can be unmatched peer name, tls not supported...");
 				}
 				else {
 					throw new Exception("Connection could not be opened: $errno $errstr");
