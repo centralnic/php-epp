@@ -30,16 +30,22 @@
 */
 class Net_EPP_Protocol {
 
+
 	static function _fread_nb($socket,$length) {
 		$result = '';
 
 		// Loop reading and checking info to see if we hit timeout
 		$info = stream_get_meta_data($socket);
 		$time_start = microtime(true);
+		$timeout_time=time()+$GLOBALS['timeout'];
 
 		while (!$info['timed_out'] && !feof($socket)) {
+			//make sure we don't wait to long
+			if($timeout_time>time()){
+				throw new exception('Timeout reading from EPP server');
+			}
 			// Try read remaining data from socket
-			$buffer = @fread($socket,$length - strlen($result));
+			$buffer = fread($socket,$length - strlen($result));
 			// If the buffer actually contains something then add it to the result
 			if ($buffer !== false) {
 				$result .= $buffer;
@@ -54,16 +60,18 @@ class Net_EPP_Protocol {
 			// Update metadata
 			$info = stream_get_meta_data($socket);
 			$time_end = microtime(true);
-			if (($time_end - $time_start) > 10000000) {
-				throw new exception('Timeout while reading from EPP Server');
-			}
+			
 		}
 
 		// Check for timeout
 		if ($info['timed_out']) {
 			throw new Exception('Timeout while reading data from socket');
 		}
+		if($GLOBALS['debug']){
+			$time_diff=microtime(true)-$time_start;
+			debug_log("returning after {$time_diff}");
 
+		} 
 		return $result;
 	}
 
@@ -105,6 +113,9 @@ class Net_EPP_Protocol {
 
 		return $pos;
 	}
+
+
+	
 
 	/**
 	* get an EPP frame from the remote peer

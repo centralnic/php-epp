@@ -44,6 +44,11 @@
 		 */
 		var $debug;
 
+		/** 
+		 * @var integer timeout to wait on commands
+		 */
+		var $timeout;
+
 		/**
 		 * constructor set initialize various objects
 		 * @param boolean set debugging on
@@ -94,6 +99,8 @@
 			if (!stream_set_timeout($this->socket,$timeout)) {
 				throw new Exception("Failed to set timeout on socket: $errstr (code $errno)");
 			}
+			$this->timeout=$timeout;
+			$GLOBALS['timeout']=$timeout;
 			// Set blocking
 			if (!stream_set_blocking($this->socket,0)) {
 				throw new Exception("Failed to set blocking on socket: $errstr (code $errno)");
