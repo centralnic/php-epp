@@ -76,7 +76,7 @@
 		*/
 		function connect($host, $port=700, $timeout=1, $ssl=true, $context=NULL) {
 			if($this->debug) debug_log("in connect");
-			$target = sprintf('%s://%s:%d', ($ssl === true ? 'ssl' : 'tcp'), $host, $port);
+			$target = sprintf('%s://%s:%d', ($ssl === true ? 'tls' : 'tcp'), $host, $port);
 			if($this->debug)  debug_log("connecting to {$target}");
 
 			if (is_resource($context)) {
