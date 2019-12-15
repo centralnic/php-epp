@@ -81,7 +81,6 @@
 
 			if (is_resource($context)) {
 				if($this->debug) debug_log("using your provided context resource");
-
 				$result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
 
 			} else {
@@ -105,7 +104,12 @@
 					throw new Exception("non errono 0 retrieved from socket connection: {$errno}");
 				}
 			} else {
-				throw new Exception("Connection could not be opened: $errno $errstr");
+				if($result === FALSE && $errno == 0){
+					throw new Exception("Connection could not be opened due to socket problem");
+				}
+				else {
+					throw new Exception("Connection could not be opened: $errno $errstr");
+				}
 			}
 
 
@@ -115,7 +119,7 @@
 			}
 			$this->timeout=$timeout;
 			$GLOBALS['timeout']=$timeout;
-			
+
 			// Set blocking
 			if (!stream_set_blocking($this->socket,0)) {
 				throw new Exception("Failed to set blocking on socket: $errstr (code $errno)");
