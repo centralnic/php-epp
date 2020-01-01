@@ -1,0 +1,27 @@
+<?php
+
+$finder = PhpCsFixer\Finder::create()
+    ->exclude('tests')
+    ->in(__DIR__)
+;
+
+return PhpCsFixer\Config::create()
+    ->setRules([
+        '@PSR2' => true,
+        'declare_equal_normalize' => ['space' => 'single'],
+        'array_syntax' => ['syntax' => 'long'],
+        'object_operator_without_whitespace' => true,
+        'binary_operator_spaces' => true,
+        'no_alternative_syntax' => true,
+        'braces' => true,
+        'php_unit_method_casing' => ['case' => 'camel_case'],
+        'class_attributes_separation' => ['elements' => ['method']],
+        'no_blank_lines_after_phpdoc' => true,
+        'no_trailing_whitespace' => true,
+        'constant_case' => ['case' => 'lower'],
+        'phpdoc_indent' => true,
+        'phpdoc_align' => ['align' => 'vertical'],
+
+    ])
+    ->setFinder($finder)
+;

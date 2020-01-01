@@ -17,17 +17,17 @@
 */
 
 /**
-* Low-level functions useful for both EPP clients and servers
-* @package Net_EPP
-* @version 0.0.4
-* @author Gavin Brown <gavin.brown@nospam.centralnic.com>
-* @revision $Id: Protocol.php,v 1.4 2011/06/28 09:48:02 gavin Exp $
-*/
+ * Low-level functions useful for both EPP clients and servers
+ * @package Net_EPP
+ * @version 0.0.4
+ * @author Gavin Brown <gavin.brown@nospam.centralnic.com>
+ * @revision $Id: Protocol.php,v 1.4 2011/06/28 09:48:02 gavin Exp $
+ */
 
 /**
-* Low-level functions useful for both EPP clients and servers
-* @package Net_EPP
-*/
+ * Low-level functions useful for both EPP clients and servers
+ * @package Net_EPP
+ */
 class Net_EPP_Protocol
 {
     public static function _fread_nb($socket, $length)
@@ -37,12 +37,12 @@ class Net_EPP_Protocol
         // Loop reading and checking info to see if we hit timeout
         $info = stream_get_meta_data($socket);
         $time_start = microtime(true);
-        $timeout_time=$time_start+$GLOBALS['timeout'];
+        $timeout_time = $time_start + $GLOBALS['timeout'];
 
         while (!$info['timed_out'] && !feof($socket)) {
             //make sure we don't wait to long
-            if ($timeout_time<microtime(true)) {
-                $time_diff=microtime(true)-$time_start;
+            if ($timeout_time < microtime(true)) {
+                $time_diff = microtime(true) - $time_start;
                 throw new exception("Timeout reading from EPP server after $time_diff seconds");
             }
             // Try read remaining data from socket
@@ -68,12 +68,11 @@ class Net_EPP_Protocol
             throw new Exception('Timeout while reading data from socket');
         }
         if ($GLOBALS['debug']) {
-            $time_diff=(microtime(true)-$time_start)*1000;
-            debug_log("returning after {$time_diff} ms");
+            $time_diff = (microtime(true) - $time_start) * 1000;
+            syslog(LOG_INFO, "returning after {$time_diff} ms");
         }
         return $result;
     }
-
 
     public static function _fwrite_nb($socket, $buffer, $length)
     {
@@ -103,11 +102,11 @@ class Net_EPP_Protocol
             }
             // Update metadata
             $info = stream_get_meta_data($socket);
-			$time_end = microtime(true);
-			$timeDiff=round(($time_end-$time_start)*1000);
-			if($GLOBALS['debug']){
-				debug_log("time to write to socket ${timeDiff}ms");
-			}
+            $time_end = microtime(true);
+            $timeDiff = round(($time_end - $time_start) * 1000);
+            if ($GLOBALS['debug']) {
+                syslog(LOG_DEBUG, "time to write to socket ${timeDiff}ms");
+            }
             if (($time_end - $time_start) > 10000000) {
                 throw new exception('Timeout while writing to EPP Server');
             }
@@ -120,24 +119,21 @@ class Net_EPP_Protocol
         return $pos;
     }
 
-
-    
-
     /**
-    * get an EPP frame from the remote peer
-    * @param resource $socket a socket connected to the remote peer
-    * @throws Exception on frame errors.
-    * @return string the frame
-    */
+     * get an EPP frame from the remote peer
+     * @param  resource  $socket a socket connected to the remote peer
+     * @throws Exception on frame errors.
+     * @return string    the frame
+     */
     public static function getFrame($socket)
     {
         if ($GLOBALS['debug']) {
-            debug_log("start reading first 4 bytes");
+            syslog(LOG_INFO, "start reading first 4 bytes");
         }
         // Read header
         $hdr = Net_EPP_Protocol::_fread_nb($socket, 4);
         if ($GLOBALS['debug']) {
-            debug_log("read header successfully containing ".var_dump($hdr));
+            syslog(LOG_INFO, "read header successfully containing ".var_dump($hdr));
         }
 
         // Unpack first 4 bytes which is our length
@@ -153,21 +149,21 @@ class Net_EPP_Protocol
     }
 
     /**
-    * send an EPP frame to the remote peer
-    * @param resource $socket a socket connected to the remote peer
-    * @param string $xml the XML to send
-    * @throws Exception when it doesn't complete the write to the socket
-    * @return the amount of bytes written to the frame
-    */
+     * send an EPP frame to the remote peer
+     * @param  resource  $socket a socket connected to the remote peer
+     * @param  string    $xml    the XML to send
+     * @throws Exception when it doesn't complete the write to the socket
+     * @return the       amount of bytes written to the frame
+     */
     public static function sendFrame($socket, $xml)
     {
-		$length = strlen($xml) + 4;
+        $length = strlen($xml) + 4;
 
-		if($GLOBALS['debug']){
-			debug_log("length of the header is ${length} about to write ${xml}");
-		}
+        if ($GLOBALS['debug']) {
+            syslog(LOG_INFO, "length of the header is ${length} about to write ${xml}");
+        }
         // Grab XML length & add on 4 bytes for the counter
-		
+        
         $res = Net_EPP_Protocol::_fwrite_nb($socket, pack('N', $length) . $xml, $length);
         // Check our write matches
         if ($length != $res) {
