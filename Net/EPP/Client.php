@@ -99,7 +99,7 @@
                     if ($this->debug) {
                         $socketmeta = stream_get_meta_data($result);
                         if (isset($socketmeta['crypto'])) {
-                            syslog(LOG_NOTICE, "socket opened with protocol ".$socketmeta['crypto']['protocol'].", cipher ".$socketmeta['crypto']['cipher_name'].", ".$socketmeta['crypto']['cipher_bits']." bits ".$socketmeta['crypto']['cipher_version'], "Connection made");
+                            syslog(LOG_NOTICE, "socket opened with protocol ".$socketmeta['crypto']['protocol'].", cipher ".$socketmeta['crypto']['cipher_name'].", ".$socketmeta['crypto']['cipher_bits']." bits ".$socketmeta['crypto']['cipher_version']);
                         } else {
                             syslog(LOG_INFO, "socket opened without crypt");
                         }
