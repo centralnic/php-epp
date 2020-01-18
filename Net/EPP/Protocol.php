@@ -41,7 +41,7 @@ class Net_EPP_Protocol
 
         while (!$info['timed_out'] && !feof($socket)) {
             //make sure we don't wait to long
-            if ($timeout_time < microtime(true)) {
+			if (($time_end - $time_start) > 10000000) {
                 $time_diff = microtime(true) - $time_start;
                 throw new exception("Timeout reading from EPP server after $time_diff seconds");
             }
@@ -71,6 +71,7 @@ class Net_EPP_Protocol
             $time_diff = (microtime(true) - $time_start) * 1000;
             syslog(LOG_INFO, "returning after {$time_diff} ms");
         }
+
         return $result;
     }
 
@@ -115,6 +116,7 @@ class Net_EPP_Protocol
         if ($info['timed_out']) {
             throw new Exception('Timeout while writing data to socket');
         }
+        
 
         return $pos;
     }
@@ -135,7 +137,6 @@ class Net_EPP_Protocol
         if ($GLOBALS['debug']) {
             syslog(LOG_INFO, "read header successfully containing ".var_dump($hdr));
         }
-
         // Unpack first 4 bytes which is our length
         $unpacked = unpack('N', $hdr);
         $length = $unpacked[1];
@@ -158,12 +159,10 @@ class Net_EPP_Protocol
     public static function sendFrame($socket, $xml)
     {
         $length = strlen($xml) + 4;
-
         if ($GLOBALS['debug']) {
             syslog(LOG_INFO, "length of the header is ${length} about to write ${xml}");
         }
         // Grab XML length & add on 4 bytes for the counter
-        
         $res = Net_EPP_Protocol::_fwrite_nb($socket, pack('N', $length) . $xml, $length);
         // Check our write matches
         if ($length != $res) {

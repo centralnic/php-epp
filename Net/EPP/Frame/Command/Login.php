@@ -26,5 +26,15 @@
 			$this->command->appendChild($this->svcs);
 
 		}
+
+		function addExtension($exts) {
+			$extensions = $this->createElement('svcExtension');
+			foreach ($exts as $ext) {
+				$ext_el = $this->createObjectPropertyElement('extURI');
+				$ext_el->appendChild($this->createTextNode(Net_EPP_ObjectSpec::xmlns($ext)));
+				$extensions->appendChild($ext_el);
+			}
+			$this->svcs->appendChild($extensions);
+		}
 	}
 ?>

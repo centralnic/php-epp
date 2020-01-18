@@ -23,9 +23,9 @@
      * @author Gavin Brown <gavin.brown@nospam.centralnic.com>
      * @revision $Id: Client.php,v 1.13 2010/10/21 11:55:07 gavin Exp $
      */
-    require_once('Protocol.php');
+    require_once('Net/EPP/Protocol.php');
 
-    $GLOBALS['Net_EPP_Client_Version'] = '0.0.5';
+    $GLOBALS['Net_EPP_Client_Version'] = '0.0.6';
 
     /**
      * A simple client class for the Extensible Provisioning Protocol (EPP)
@@ -38,7 +38,6 @@
          * @var resource the socket resource, once connected
          */
         public $socket;
-
         /**
          * @var bool do output more debug messages
          */
@@ -59,7 +58,7 @@
             $GLOBALS['debug'] = $debug;
             $this->socket = null;
         }
-    
+
         /**
          * Establishes a connect to the server
          * This method establishes the connection to the server. If the connection was
@@ -67,24 +66,26 @@
          * frame which is sent by the server upon connection. If connection fails, then
          * an exception with a message explaining the error will be thrown and handled
          * in the calling code.
-         * @param  string    $host    the hostname
-         * @param  integer   $port    the TCP port
-         * @param  integer   $timeout the timeout in seconds
-         * @param  boolean   $ssl     whether to connect using SSL
-         * @param  resource  $context a stream resource to use when setting up the socket connection
+         * @param string   $host    the hostname
+         * @param integer  $port    the TCP port
+         * @param integer  $timeout the timeout in seconds
+         * @param boolean  $ssl     whether to connect using SSL
+         * @param resource $context a stream resource to use when setting up the socket connection
+         *@param string $protocol whether to use TLS or SSL
          * @throws Exception on connection errors
          * @return a         string containing the server <greeting>
          */
-        public function connect($host, $port = 700, $timeout = 1, $ssl = true, $context = null)
+        public function connect($host, $port = 700, $timeout = 1, $ssl = true, $context = null, $protocol = 'tls')
         {
             if ($this->debug) {
                 syslog(LOG_INFO, "in connect");
             }
-            $target = sprintf('%s://%s:%d', ($ssl === true ? 'tls' : 'tcp'), $host, $port);
+            
+            $target = sprintf('%s://%s:%d', ($ssl === true ? $protocol : 'tcp'), $host, $port);
             if ($this->debug) {
                 syslog(LOG_INFO, "connecting to {$target}");
             }
-
+            
             if (is_resource($context)) {
                 if ($this->debug) {
                     syslog(LOG_INFO, "using your provided context resource");
@@ -93,7 +94,6 @@
             } else {
                 $result = stream_socket_client($target, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
             }
-
             if (is_resource($result)) {
                 if ($errno == 0) {
                     if ($this->debug) {
@@ -117,14 +117,13 @@
                 }
             }
 
-
             // Set stream timeout
             if (!stream_set_timeout($this->socket, $timeout)) {
                 throw new Exception("Failed to set timeout on socket: $errstr (code $errno)");
             }
             $this->timeout = $timeout;
             $GLOBALS['timeout'] = $timeout;
-
+            
             // Set blocking
             if (!stream_set_blocking($this->socket, 0)) {
                 throw new Exception("Failed to set blocking on socket: $errstr (code $errno)");

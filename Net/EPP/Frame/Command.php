@@ -22,9 +22,11 @@
 
 				$this->command->appendChild($this->payload);
 			}
+		}
 
+		function addclTRID($id) {
 			$this->clTRID = $this->createElement('clTRID');
-			$this->clTRID->appendChild($this->createTextNode(''));
+			$this->clTRID->appendChild($this->createTextNode($id));
 			$this->body->appendChild($this->clTRID);
 		}
 
@@ -42,23 +44,32 @@
 			return $element;
 		}
 
-		function createObjectPropertyElement($name) {
+		function createObjectPropertyElement($name, $type=NULL) {
+			$ns_type = isset($type) ? $type : $this->type;
+			$ns = !empty($ns_type) ? $ns_type.':'.$name : $name;
 			return $this->createElementNS(
-				Net_EPP_ObjectSpec::xmlns($this->type),
-				$this->type.':'.$name
+				Net_EPP_ObjectSpec::xmlns($ns_type), $ns
 			);
 		}
 
-		function createExtensionElement($ext, $command) {
+		function createExtension() {
 			$this->extension = $this->createElement('extension');
 			$this->body->appendChild($this->extension);
+		}
 
+        /**
+		 * Creates an extension element with the option of specifying a custom namespace
+         * @param $ext
+         * @param $command
+         * @param null $version		 *
+         */
+		function createExtensionElement($ext, $command, $version=null) {
 			$this->extension->payload = $this->createElementNS(
-				Net_EPP_ObjectSpec::xmlns($ext),
+				Net_EPP_ObjectSpec::xmlns($version !== null ? $version : $ext),
 				$ext.':'.$command
 			);
-
 			$this->extension->appendChild($this->extension->payload);
 		}
+
 	}
 ?>

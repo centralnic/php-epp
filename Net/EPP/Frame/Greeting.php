@@ -3,7 +3,7 @@
 	/**
 	* @package Net_EPP
 	*/
-	class Net_EPP_Frame_Greeting extends Net_EPP_Frame {
+	final class Net_EPP_Frame_Greeting extends Net_EPP_Frame {
 		function __construct() {
 			parent::__construct('greeting');
 
