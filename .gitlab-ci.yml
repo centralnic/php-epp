@@ -2,15 +2,13 @@
 
 image: centralnicregistry/syntaxtester:latest
 
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-
 stages:
   - syntax-check
   - git-robot
 
 default:
   before_script: 
+   - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@git.centralnic.com/centralnic/tests.git
    - tests/prep-alpine-env.sh
 
 step-syntax-check:
