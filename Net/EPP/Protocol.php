@@ -41,7 +41,7 @@ class Net_EPP_Protocol
 
         while (!$info['timed_out'] && !feof($socket)) {
             //make sure we don't wait to long
-			if (($time_end - $time_start) > 10000000) {
+            if (($time_end - $time_start) > 10000000) {
                 $time_diff = microtime(true) - $time_start;
                 throw new exception("Timeout reading from EPP server after $time_diff seconds");
             }

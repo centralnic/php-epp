@@ -2,7 +2,6 @@
 
 class Net_EPP
 {
-
     /**
      * load a class by giving it's short name
      * @return boolean
@@ -12,7 +11,7 @@ class Net_EPP
         $prefix = __CLASS__.'_';
 
         if ($prefix == substr($class, 0, strlen($prefix))) {
-            $basedir=dirname(dirname(__FILE__));
+            $basedir = dirname(dirname(__FILE__));
             syslog(LOG_INFO, "class name is {$class} from dir {$basedir}");
             
             $file = $basedir.'/'.str_replace('_', '/', $class).'.php';
