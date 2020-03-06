@@ -23,7 +23,7 @@
      * @author Gavin Brown <gavin.brown@nospam.centralnic.com>
      * @revision $Id: Client.php,v 1.13 2010/10/21 11:55:07 gavin Exp $
      */
-    require_once('Net/EPP/Protocol.php');
+    require_once('Protocol.php');
 
     $GLOBALS['Net_EPP_Client_Version'] = '0.0.6';
 
