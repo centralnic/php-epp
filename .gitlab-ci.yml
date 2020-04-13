@@ -1,6 +1,6 @@
 #this is the latest template to assist in copying
 
-image: centralnicregistry/syntaxtester:latest
+image: dockerregistry.centralnic.com:443/syntaxtester:latest
 
 stages:
   - syntax-check
