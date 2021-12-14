@@ -3,7 +3,7 @@
     /**
      * @package Net_EPP
      */
-    class Net_EPP_Frame_Command_Delete_Contact extends Net_EPP_Frame_Command_Delete
+    class Net_EPP_Frame_Command_Check_Contact extends Net_EPP_Frame_Command_Check
     {
         public function __construct()
         {

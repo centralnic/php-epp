@@ -1,0 +1,55 @@
+#this is the latest template to assist in copying
+
+image: git.centralnic.com:5050/centralnic/syntaxchecker:master
+
+stages:
+  - syntax-check
+  - git-robot
+
+default:
+  before_script: 
+   - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@git.centralnic.com/centralnic/tests.git
+   - tests/prep-alpine-env.sh
+
+step-syntax-check:
+  stage: syntax-check
+  script:
+    - export DYNAMIC_ENV_VAR=DEVELOP
+    - echo running tests in $DYNAMIC_ENV_VAR
+    - tests/testlints.sh
+  
+merge-master-to-ote:
+  stage: git-robot
+  only:
+    - master
+  script:
+    - eval $(ssh-agent -s)
+    - bash -c "ssh-add <(echo '$GIT_SSH_PRIV_KEY')"
+    - ssh-add -L
+    - export TMP_DIR=$(mktemp -d -t ./ci-XXXXXXXXXX)
+    - cd $TMP_DIR
+    - pwd
+    - bash -c "set -x; git clone git@git.centralnic.com:${CI_PROJECT_PATH}.git"
+    - cd ${CI_PROJECT_NAME}
+    - git checkout master
+    - git checkout --track origin/ote
+    - git merge master
+    - git push origin ote
+
+merge-ote-to-dev:
+  stage: git-robot
+  only:
+    - ote
+  script:
+    - eval $(ssh-agent -s)
+    - bash -c "ssh-add <(echo '$GIT_SSH_PRIV_KEY')"
+    - ssh-add -L
+    - export TMP_DIR=$(mktemp -d -t ./ci-XXXXXXXXXX)
+    - cd $TMP_DIR
+    - pwd
+    - bash -c "set -x; git clone git@git.centralnic.com:${CI_PROJECT_PATH}.git"
+    - cd ${CI_PROJECT_NAME}
+    - git checkout --track origin/ote
+    - git checkout --track origin/dev
+    - git merge ote
+    - git push origin dev

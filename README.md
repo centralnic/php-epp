@@ -18,7 +18,7 @@ Net_EPP also provides a high-level EPP frame builder (Net_EPP_Frame)
 which can be used to construct frames that comply with the EPP 
 specification and can be used to interact with a server.
 
-The class is organised on similar lines to the Net::EPP::Client Perl 
+The class is organized on similar lines to the Net::EPP::Client Perl 
 module.
 
 This program is free software; you can redistribute it and/or modify it 
@@ -26,3 +26,18 @@ under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 2 of the License, or (at your 
 option) any later version.
 
+Example use case in code:
+
+```
+//load the autoloader class
+require_once("php-epp/Net/EPP.php");
+
+if(Net_EPP::autoload('Client')){
+    print "autoloading succeeded\n";
+}
+
+$epp=new Net_EPP_Client();
+
+$greeting=$epp->connect('servername','port',20);
+
+```
