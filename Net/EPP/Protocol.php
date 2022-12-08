@@ -36,7 +36,7 @@ class Net_EPP_Protocol
 
         // Loop reading and checking info to see if we hit timeout
         $info = stream_get_meta_data($socket);
-        $time_start = microtime(true);
+        $time_start = $time_end = microtime(true);
         $timeout_time = $time_start + $GLOBALS['timeout'];
 
         while (!$info['timed_out'] && !feof($socket)) {
